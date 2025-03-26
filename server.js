@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 
 
-const allowedOrigins = ["https://spark-frontend-rosy.vercel.app"];
+const allowedOrigins = ["https://cnnct-frontend.vercel.app/"];
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
