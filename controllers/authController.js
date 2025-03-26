@@ -4,42 +4,36 @@ const bcrypt = require('bcryptjs'); // Import bcrypt for password hashing
 
 
 exports.signup = async (req, res) => {
-    try {
-      console.log("🟢 Received Signup Request:", req.body);
-  
-      const { firstName, lastName, email, password, confirmPassword } = req.body;
-  
-      if (!firstName || !lastName || !email || !password || !confirmPassword) {
-        console.log("❌ Missing fields:", { firstName, lastName, email, password, confirmPassword });
-        return res.status(400).json({ error: "All fields are required" });
-      }
-  
-      if (password !== confirmPassword) {
-        console.log("❌ Password mismatch");
-        return res.status(400).json({ error: "Passwords do not match" });
-      }
-  
-      const existingUser = await User.findOne({ email });
-      if (existingUser) {
-        console.log("❌ User already exists");
-        return res.status(400).json({ error: "User already exists" });  // ✅ Send JSON error response
-      }
-  
-      const newUser = new User({ firstName, lastName, email, password });
-      await newUser.save();
-      console.log("✅ User saved successfully.");
-  
-      const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: "24h" });
-  
-      res.status(201).json({
-        token,
-        user: { email: newUser.email, firstName: newUser.firstName },
-      });
-    } catch (err) {
-      console.error("❌ Error during signup:", err);
-      res.status(500).json({ error: "An error occurred during signup. Please try again." });
+  try {
+    console.log("🟢 Received Signup Request:", req.body);
+    const { firstName, lastName, email, password, confirmPassword } = req.body;
+
+    if (!firstName || !lastName || !email || !password || !confirmPassword) {
+      return res.status(400).json({ error: "All fields are required" });
     }
-  };
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: "Passwords do not match" });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters" });
+    }
+
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: "User already exists" });
+    }
+
+    const newUser = new User({ firstName, lastName, email, password }); // Raw password—let pre("save") hash
+    await newUser.save();
+
+    const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET, { expiresIn: "24h" });
+    res.status(201).json({ token, user: { email: newUser.email, firstName: newUser.firstName } });
+  } catch (err) {
+    console.error("🔥 ERROR during signup:", err);
+    res.status(500).json({ error: "An error occurred during signup.", details: err.message });
+  }
+};
+
   
   
 

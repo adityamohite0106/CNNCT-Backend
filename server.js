@@ -10,6 +10,10 @@ const app = express();
 app.use(express.json());
 app.use(cors({ origin: "*", credentials: true }));
 app.use(cookieParser());
+app.use((err, req, res, next) => {
+  console.error("🔥 ERROR:", err); // More detailed logs
+  res.status(500).json({ message: "Internal Server Error", error: err.message });
+});
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/booking", {
