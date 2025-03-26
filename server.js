@@ -8,7 +8,24 @@ const app = express();
 
 // Middleware
 app.use(express.json());
-app.use(cors({ origin: "*", credentials: true }));
+
+
+const allowedOrigins = ["https://spark-frontend-rosy.vercel.app"];
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (/^http:\/\/localhost:\d+$/.test(origin) || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error("Not allowed by CORS"));
+  },
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+app.options("*", cors()); // ✅ Handle preflight OPTIONS requests
+
+
 app.use(cookieParser());
 app.use((err, req, res, next) => {
   console.error("🔥 ERROR:", err);
