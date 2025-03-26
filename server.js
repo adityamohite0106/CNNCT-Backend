@@ -11,21 +11,20 @@ app.use(express.json());
 app.use(cors({ origin: "*", credentials: true }));
 app.use(cookieParser());
 app.use((err, req, res, next) => {
-  console.error("🔥 ERROR:", err); // More detailed logs
+  console.error("🔥 ERROR:", err);
   res.status(500).json({ message: "Internal Server Error", error: err.message });
 });
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/booking", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 30000, // 30s timeout
 })
 .then(() => console.log("✅ MongoDB Connected"))
 .catch(err => console.error("❌ MongoDB Error:", err));
 
 // Import Routes
 const authRoutes = require("./routes/authRoutes");
-app.use("/api/auth", authRoutes); // ✅ Fix: Ensure correct route
+app.use("/api/auth", authRoutes);
 
 // Start Server
 const PORT = process.env.PORT || 5000;
